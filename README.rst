@@ -102,6 +102,7 @@ or with terminal to build semantic label::
 with terminal to stitch images::
 
     slcpy_stitch -dir C:/... -o C:/.../output -m True -pf maks -b True
+    
  string [-dir] Directory of the folder that contain data.
     [-default] os.getcwd() + r'\data'
  string [-o]   Output directory to the folder where all of converted filed are stored.
@@ -116,6 +117,7 @@ with terminal to stitch images::
 with terminal to build point cloud from image::
 
     slcpy_graph -dir C:/... -o C:/.../output -s cvs
+    
  string [-dir] Directory of the folder that contain data.
     [-default] os.getcwd() + r'\data'
  string [-o]   Output directory to the folder where all of converted filed are stored.
