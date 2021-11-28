@@ -1,5 +1,6 @@
-import os
-import shutil
+from os import mkdir, rename, listdir, getcwd
+from os.path import isdir, join
+from shutil import rmtree
 from time import sleep
 
 import click
@@ -14,11 +15,11 @@ from slcpy.version import version
 
 @click.command()
 @click.option('-dir', '--dir_path',
-              default=os.getcwd() + r'\data',
+              default=getcwd() + r'\data',
               help='Directory to the folder which contains *.tif files.',
               show_default=True)
 @click.option('-o', '--output',
-              default=os.getcwd() + r'\data' + r'\output',
+              default=getcwd() + r'\data' + r'\output',
               help='Directory to the folder where results will be saved.',
               show_default=True)
 @click.option('-m', '--build_mask',
@@ -71,7 +72,7 @@ def main(dir_path,
          filter_empty_patches,
          stride):
     """
-    Main module for composing semantic label from given point cloud
+    MAIN MODULE FOR COMPOSING SEMANTIC LABEL FROM GIVEN POINT CLOUD
 
     Args:
         -dir / dir_path: Directory to the folder with image dataset.
@@ -92,35 +93,35 @@ def main(dir_path,
        -s / stride: stride for patch step size with overlay
     """
 
-    if os.path.isdir(output):
+    if isdir(output):
         try:
-            os.rename(output, dir_path + r'\output_old')
-            os.mkdir(output)
-            os.mkdir(output + r'\imgs')
-            os.mkdir(output + r'\mask')
+            rename(output, dir_path + r'\output_old')
+            mkdir(output)
+            mkdir(output + r'\imgs')
+            mkdir(output + r'\mask')
 
         except Exception:
             print("Folder for the output data already exist... "
                   "Data copied to output_old."
                   "Output folder will be overwrite...")
-            shutil.rmtree(dir_path + r'\output_old')
-            os.rename(output, dir_path + r'\output_old')
-            os.mkdir(output)
-            os.mkdir(output + r'\imgs')
-            os.mkdir(output + r'\mask')
+            rmtree(dir_path + r'\output_old')
+            rename(output, dir_path + r'\output_old')
+            mkdir(output)
+            mkdir(output + r'\imgs')
+            mkdir(output + r'\mask')
             pass
 
     else:
-        os.mkdir(output)
-        os.mkdir(output + r'\imgs')
-        os.mkdir(output + r'\mask')
+        mkdir(output)
+        mkdir(output + r'\imgs')
+        mkdir(output + r'\mask')
 
     image_counter = 0
     idx = 0
 
-    batch_iter = tqdm(os.listdir(dir_path),
+    batch_iter = tqdm(listdir(dir_path),
                       'Building Semantic patch images',
-                      total=len(os.listdir(dir_path)),
+                      total=len(listdir(dir_path)),
                       leave=False)
 
     for file in batch_iter:
@@ -132,7 +133,7 @@ def main(dir_path,
         if file.endswith('.tif'):
             if build_mask:
                 image, label_mask = slcpy_semantic(
-                    os.path.join(dir_path, file),
+                    join(dir_path, file),
                     mask=build_mask,
                     pixel_size=pixel_size,
                     circle_size=circle_size,
@@ -140,33 +141,38 @@ def main(dir_path,
                     trim_mask=pretrim_mask)
             else:
                 image = slcpy_semantic(
-                    os.path.join(dir_path, file),
+                    join(dir_path, file),
                     mask=build_mask)
                 label_mask = None
 
             if trim_size_xy is None:
                 tifffile.imwrite(
-                    os.path.join(output + r'\imgs', img_name),
+                    join(output + r'\imgs', img_name),
                     np.array(image, 'int8')
                 )
 
                 if build_mask:
                     tifffile.imwrite(
-                        os.path.join(output + r'\mask', mask_name),
+                        join(output + r'\mask', mask_name),
                         np.array(label_mask, 'int8')
                     )
             else:
 
-                if not filter_empty_patches:
-                    idx = trim_images(image, label_mask,
-                                      trim_size_xy, trim_size_z,
-                                      multi_classification,
-                                      output, idx)
+                if filter_empty_patches:
+                    idx = trim_images(image=image, label_mask=label_mask,
+                                      trim_size_xy=trim_size_xy,
+                                      trim_size_z=trim_size_z,
+                                      multi_layer=multi_classification,
+                                      output=output,
+                                      image_counter=idx)
                 else:
-                    idx = trim_to_patches(image, label_mask,
-                                          trim_size_xy, trim_size_z,
-                                          multi_classification,
-                                          output, stride)
+                    idx = trim_to_patches(image=image, label_mask=label_mask,
+                                          trim_size_xy=trim_size_xy,
+                                          trim_size_z=trim_size_z,
+                                          multi_layer=multi_classification,
+                                          image_counter=idx,
+                                          output=output,
+                                          stride=stride)
 
 
 if __name__ == '__main__':

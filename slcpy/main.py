@@ -13,7 +13,7 @@ def trim_label_mask(points: np.ndarray,
                     image: np.ndarray,
                     label_mask: np.ndarray):
     """
-        Module to load 3D .tif file
+    MODULE TO TRIM CREATED IMAGES AND MASK
 
     Args:
         points: 3D coordinates of pitons
@@ -48,11 +48,11 @@ def slcpy_semantic(dir_path: str,
                    multi_layer=False,
                    trim_mask=True):
     """
-        Class module to load 3D .tif file
+    MODULE TO LOAD 3D .tif FILES WITH CORRESPONDING .am FILES
 
     Args:
         dir_path: path direction of the input file *.tif
-        mask: If True
+        mask: If True 
         pixel_size: pixel size in Angstrom
         circle_size: size of a circle the label mask in Angstrom
         trim_mask: True/False statement for trimming input data
@@ -78,10 +78,9 @@ def slcpy_semantic(dir_path: str,
         r = round((circle_size / 2) / pixel_size)
 
         if trim_mask:
-            image, label_mask, points = trim_label_mask(
-                points,
-                image,
-                label_mask)
+            image, label_mask, points = trim_label_mask(points,
+                                                        image,
+                                                        label_mask)
 
         if multi_layer:
             label_mask = np.stack((label_mask,) * 3, axis=-1)
@@ -114,20 +113,23 @@ def slcpy_semantic(dir_path: str,
 
 def slcpy_stitch(dir_path: str,
                  mask: bool,
-                 prefix=None):
+                 prefix=None,
+                 dtype='int8'):
     """
-        Class module to stitched segmented images
+    MODULE TO STITCH SEGMENTED IMAGES
 
     Args:
         dir_path: Path direction of the input file *.tif with semantic masks.
         mask: If True images are treated as Semantic mask not image.
         prefix: Prefix name for the Images.
+        dtype: Type of output image.
     """
 
     stitcher = StitchImages()
     stitch_img = stitcher(dir_path=dir_path,
                           mask=mask,
-                          prefix=prefix)
+                          prefix=prefix,
+                          dtype=dtype)
 
     return stitch_img
 
@@ -137,7 +139,7 @@ def slcpy_graph(dir_path: str,
                 clean_graph: bool,
                 down_sampling: int):
     """
-        Class module to build point cloud from 3d .tiff
+    MODULE TO BUILD POINT CLOUD FROM 3D .tiff FILES
 
     Args:
         dir_path: Path direction of the input file *.tif with semantic masks.
